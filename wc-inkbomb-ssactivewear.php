@@ -33,6 +33,7 @@ if ( version_compare( get_bloginfo('version'), '4.0', '<' ) ) {
  * Constants
  */
 define('INKBOMB_SS_PATH', plugin_dir_path(__FILE__ ));
+define('INKBOMB_SS_CLASS_PATH', plugin_dir_path(__FILE__ ) . 'includes/ss-activewear/src/SSActivewear/');
 define('INKBOMB_SS_URI', plugin_dir_url( __FILE__ ));
 const INKBOMB_SS_DOMAIN = 'ssactivewear';
 

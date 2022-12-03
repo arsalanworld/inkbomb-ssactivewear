@@ -26,27 +26,9 @@ class Credentials implements \InkbombCore\Http\CredentialInterface
     public function getAuth(): array
     {
         return [
-            static::CUSTOMER_NUMBER => $this->getCustomerNumber(),
-            static::API_KEY => $this->getAPIKey()
+            static::CUSTOMER_NUMBER => $this->getConfig()->getCustomerNumber(),
+            static::API_KEY => $this->getConfig()->getAPIKey()
         ];
-    }
-
-    /**
-     * @return string
-     */
-    private function getCustomerNumber(): string
-    {
-        $customerNumber = $this->getConfig()->getOptionsArray( Settings::OPTION_CUSTOMER_NUMBER );
-        return ( !empty( $customerNumber ) ) ? $customerNumber[ Settings::OPTION_CUSTOMER_NUMBER ]: '';
-    }
-
-    /**
-     * @return string
-     */
-    private function getAPIKey(): string
-    {
-        $apiKey = $this->getConfig()->getOptionsArray( Settings::OPTION_API_KEY );
-        return ( !empty( $apiKey ) ) ? $apiKey[Settings::OPTION_API_KEY] : '';
     }
 
     /**

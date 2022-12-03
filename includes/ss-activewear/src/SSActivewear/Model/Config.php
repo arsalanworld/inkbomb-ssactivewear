@@ -18,4 +18,22 @@ class Config extends \InkbombCore\Model\Config
     {
         return $this->getConfigArray( Settings::OPTION_NAME, $filterIndex );
     }
+
+    /**
+     * @return string
+     */
+    public function getCustomerNumber(): string
+    {
+        $customerNumber = $this->getOptionsArray( Settings::OPTION_CUSTOMER_NUMBER );
+        return ( !empty( $customerNumber ) ) ? $customerNumber[ Settings::OPTION_CUSTOMER_NUMBER ]: '';
+    }
+
+    /**
+     * @return string
+     */
+    public function getAPIKey(): string
+    {
+        $apiKey = $this->getOptionsArray( Settings::OPTION_API_KEY );
+        return ( !empty( $apiKey ) ) ? $apiKey[Settings::OPTION_API_KEY] : '';
+    }
 }

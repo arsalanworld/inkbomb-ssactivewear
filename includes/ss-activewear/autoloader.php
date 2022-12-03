@@ -1,5 +1,5 @@
 <?php
-$classmap = [ 'SSActivewear' => __DIR__ . '/src/',];
+$classmap = [ 'SSActivewear' => __DIR__ . '/src/SSActivewear/',];
 
 spl_autoload_register(function (string $classname) use ($classmap) {
     $parts = explode('\\', $classname);
