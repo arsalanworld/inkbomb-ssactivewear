@@ -32,6 +32,19 @@ class Credentials implements \InkbombCore\Http\CredentialInterface
     }
 
     /**
+     * Returns the basic authentication token.
+     *
+     * @return string
+     */
+    public function getBasicAuthentication(): string
+    {
+        return base64_encode(
+            $this->getConfig()->getCustomerNumber() . ':'
+            . $this->getConfig()->getAPIKey()
+        );
+    }
+
+    /**
      * Get Config model instance.
      *
      * @return Config

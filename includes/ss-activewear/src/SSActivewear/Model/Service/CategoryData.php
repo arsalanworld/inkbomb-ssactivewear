@@ -1,16 +1,24 @@
 <?php
 namespace SSActivewear\Model\Service;
 
-class CategoryData
+use SSActivewear\Model\Config;
+
+class CategoryData extends AbstractService
 {
+    /**
+     * @var string
+     */
+    private $uri = Config::API_V2 . '/categories/';
+
     /**
      * Returns all categories.
      *
      * @return array
+     * @throws \Exception
      */
     public function getAll(): array
     {
-        return [];
+        return $this->sendRequest( $this->uri );
     }
 
     /**
@@ -19,10 +27,11 @@ class CategoryData
      *
      * @param string $category
      * @return array
+     * @throws \Exception
      */
     public function filterResults( string $category ): array
     {
-        return [];
+        return $this->sendRequest($this->uri . $category);
     }
 
     /**
@@ -31,9 +40,10 @@ class CategoryData
      *
      * @param string $fields
      * @return array
+     * @throws \Exception
      */
     public function filterFields( string $fields ): array
     {
-        return [];
+        return $this->sendRequest( "{$this->uri}?fields={$fields}" );
     }
 }

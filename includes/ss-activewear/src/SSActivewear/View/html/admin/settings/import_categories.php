@@ -38,30 +38,16 @@ use SSActivewear\Model\Config;
     });
 </script>
 <?php
-$curl = curl_init();
-
-curl_setopt_array($curl, array(
-    CURLOPT_URL => 'https://api-ca.ssactivewear.com/v2/categories?mediatype=json',
-    CURLOPT_RETURNTRANSFER => true,
-    CURLOPT_ENCODING => '',
-    CURLOPT_MAXREDIRS => 10,
-    CURLOPT_TIMEOUT => 0,
-    CURLOPT_FOLLOWLOCATION => true,
-    CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-    CURLOPT_CUSTOMREQUEST => 'GET',
-    CURLOPT_POSTFIELDS =>'{
-    "customerNumber": "414244",
-    "APIKey": "c1a754d4-b42a-4c85-84bc-bd4c1cd75c70"
-}',
-    CURLOPT_HTTPHEADER => array(
-        'Authorization: Basic ' . base64_encode( "414244:c1a754d4-b42a-4c85-84bc-bd4c1cd75c70" ),
-        'Content-Type: application/json'
-    ),
-));
-
-$response = curl_exec($curl);
-
-curl_close($curl);
+$request = new \InkbombCore\Http\Request(
+    [
+        "credentials" => new \SSActivewear\Model\Credentials()
+    ],
+    [],
+    '',
+    'GET',
+    Config::ENDPOINT . 'v2/categories?mediatype=json'
+);
+$api = new \SSActivewear\Http\Api();
 echo "<pre>";
-print_r($response);
+print_r($api->execute( $request ));
 echo "</pre>";
