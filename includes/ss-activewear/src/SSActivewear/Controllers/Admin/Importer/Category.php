@@ -1,11 +1,22 @@
 <?php
 namespace SSActivewear\Controllers\Admin\Importer;
 
+use SSActivewear\Model\CsvManager;
 use SSActivewear\Model\Service\CategoryData;
 
 class Category
 {
+    /**
+     * @var CategoryData
+     */
     private $serviceModel;
+
+    /**
+     * @var CsvManager
+     */
+    private $csvManager;
+
+    private $categoryModel;
 
     public function import_all()
     {
@@ -16,9 +27,15 @@ class Category
             try {
                 $categories = $this->getServiceModel()->getAll();
                 // Note down categories in CSV
-
+                //$this->getCsvManager()->writeCategoryCSV( $categories, CsvManager::CATEGORY_CSV );
+                $importCount = 0;
+                foreach ( $categories as $category ) {
+                    $this->getCategoryModel()->addCategory( $category );
+                    $importCount++;
+                }
                 wp_send_json(array(
-                    "success" => true
+                    "success" => true,
+                    "message" => "A total of {$importCount} categories swere imported."
                 ));
             } catch (\Exception $e) {
                 wp_send_json(array(
@@ -34,12 +51,31 @@ class Category
     /**
      * @return CategoryData
      */
-    protected function getServiceModel(): CategoryData
+    protected function getServiceModel()
     {
         if ( empty( $this->serviceModel ) ) {
             $this->serviceModel = new CategoryData();
         }
 
         return $this->serviceModel;
+    }
+
+    /**
+     * @return CsvManager
+     */
+    protected function getCsvManager()
+    {
+        if ( empty( $this->csvManager ) ) {
+            $this->csvManager = new CsvManager();
+        }
+        return $this->csvManager;
+    }
+
+    protected function getCategoryModel()
+    {
+        if ( empty( $this->categoryModel ) ) {
+            $this->categoryModel = new \SSActivewear\Model\Category();
+        }
+        return $this->categoryModel;
     }
 }
