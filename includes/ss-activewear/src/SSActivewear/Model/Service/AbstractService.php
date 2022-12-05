@@ -19,6 +19,48 @@ abstract class AbstractService
     private $credentials;
 
     /**
+     * @var string
+     */
+    protected $uri;
+
+    /**
+     * Returns all data for requested service.
+     *
+     * @return array
+     * @throws \Exception
+     */
+    public function getAll(): array
+    {
+        return $this->sendRequest( $this->uri );
+    }
+
+    /**
+     * Returns requested service by filter.
+     * The parameter can be a comma separated identifier ids or an Identifier id.
+     *
+     * @param string $identifier
+     * @return array
+     * @throws \Exception
+     */
+    public function filterResults( string $identifier ): array
+    {
+        return $this->sendRequest($this->uri . $identifier);
+    }
+
+    /**
+     * Returns specifically requested fields.
+     * {fields} parameter is comma separated list of requested service object fields.
+     *
+     * @param string $fields
+     * @return array
+     * @throws \Exception
+     */
+    public function filterFields( string $fields ): array
+    {
+        return $this->sendRequest( "{$this->uri}?fields={$fields}" );
+    }
+
+    /**
      * @param string $uri
      * @param string|null $method
      * @param string|null $mediaType
