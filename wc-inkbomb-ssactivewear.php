@@ -85,6 +85,8 @@ if ( !class_exists( 'WcInkbombSSActivewear' ) ) {
             // Add ajax actions
             $category = new \SSActivewear\Controllers\Admin\Importer\Category();
             add_action( 'wp_ajax_ssactivewear_import_all_cats', array( $category, 'import_all' ) );
+            $product = new \SSActivewear\Controllers\Admin\Importer\Product();
+            add_action( 'wp_ajax_ssactivewear_import_products', array( $product, 'import' ) );
         }
     }
 

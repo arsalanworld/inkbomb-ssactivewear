@@ -25,4 +25,28 @@ class Category extends \InkbombCore\Model\Category
 
         return $data;
     }
+
+    /**
+     * Returns the list of Category Ids associated with SSActivewear.
+     * {$value} can be a string or a comma separated value and is optional.
+     *
+     * @param string $key
+     * @param string|null $value
+     * @return array|string|null
+     */
+    public function getCatIdsByApiCategory( $key, $value="", $commaseparated = false )
+    {
+        global $wpdb;
+        if ( !empty( $value ) ) {
+            $value = " AND meta_value IN(" . $value . ")";
+        }
+
+        $results = $wpdb->get_results( "select post_id from $wpdb->postmeta where meta_key = '"
+            . $key . "'" . $value, ARRAY_A );
+        if ( !$commaseparated ) {
+            return $results;
+        }
+
+        return implode(",", $results);
+    }
 }

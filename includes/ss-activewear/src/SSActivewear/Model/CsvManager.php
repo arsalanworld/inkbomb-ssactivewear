@@ -10,7 +10,7 @@ class CsvManager
      * @param string|null $filename
      * @return array
      */
-    public function read( $filename )
+    public function read( $filename, $readSingleImport = false )
     {
         $filepath = $this->getFilePath( $filename );
         if ( !file_exists( $filepath ) ) {
@@ -20,16 +20,39 @@ class CsvManager
         $data = file_get_contents( $filepath );
         $rows = explode(PHP_EOL, $data);
         $output = [];
+        $keys = [];
+        $i = 0;
         foreach ($rows as $key => $row) {
             if ($key == 0) {
+                $keys = explode(",", $row);
                 continue;
             }
 
             $content = explode(",", $row);
-            if ( empty($row) ) {
+            $rContent = array_reverse($content);
+            if ( empty($row) || $rContent[0]) {
                 continue;
             }
-            $output[] = $content;
+
+            array_walk( $content, function ($v, $k) use ( &$output, $keys, $readSingleImport, $i ) {
+                if ( !isset($keys[$k]) ) {
+                    return;
+                }
+
+                if ( !$readSingleImport ) {
+                    $output[$i][$keys[$k]] = urldecode($v);
+                    return;
+                }
+
+                $output[$keys[$k]] = urldecode($v);
+            });
+
+            if ( !$readSingleImport ) {
+                $i++;
+                continue;
+            }
+
+            break;
         }
 
         return $output;
@@ -44,6 +67,33 @@ class CsvManager
         foreach ( $data as $key => $item) {
             $csv .= "{$item['categoryID']},\"{$item['name']}\",\"{$item['image']}\","
                 . ( isset($item['status']) ? $item['status'] : "0" );
+            if ( $key < (count($data) - 1) ) {
+                $csv .= PHP_EOL;
+            }
+        }
+        file_put_contents( $filepath, $csv );
+    }
+
+    /**
+     * Write data to the CSV file.
+     *
+     * @param array $data
+     * @param string $filename
+     */
+    public function writeCSV( $data, $filename )
+    {
+        $filepath = $this->getFilePath( $filename );
+        $this->checkAndCreateFile( $filepath );
+        // Status refers to the import. If imported it should be set to 1 otherwise 0 or empty
+        $csvKeys = array_keys($data[0]);
+        $csv = implode(",", $csvKeys) . ',import_status' . PHP_EOL;
+        foreach ( $data as $key => $item) {
+            array_walk( $csvKeys, function ($v, $k) use ( &$csv, $item ) {
+                if ( isset( $item[$v] ) ) {
+                    $csv .= urlencode($item[$v]) . ",";
+                }
+            } );
+            $csv .= ( isset($item['import_status']) ? $item['import_status'] : "0" );
             if ( $key < (count($data) - 1) ) {
                 $csv .= PHP_EOL;
             }

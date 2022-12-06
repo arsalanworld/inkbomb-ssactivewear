@@ -17,7 +17,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 <script type="text/javascript">
     jQuery(function ($) {
         $(document).on('click', '#import_btn', function () {
-            $("#output").html("Requesting product import API.").show();
+            $("#output").html("Requesting category import API.").show();
             $(this).attr('disabled', 'disabled');
             var currentTarget = this;
             $.post(ajaxurl, {
@@ -34,10 +34,10 @@ if ( ! defined( 'ABSPATH' ) ) {
                     return;
                 }
 
-                var span = '<span class="dashicons dashicons-saved"></span>',
+                var span = '<span class="dashicons dashicons-yes-alt"></span>',
                     cls = 'inkbomb-message-output success';
                 if ( data.failure != undefined ) {
-                    span = '<span class="dashicons dashicons-no-alt"></span>';
+                    span = '<span class="dashicons dashicons-dismiss"></span>';
                     cls = 'inkbomb-message-output failure';
                 }
 

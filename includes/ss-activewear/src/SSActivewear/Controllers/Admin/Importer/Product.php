@@ -22,13 +22,23 @@ class Product
      */
     private $productService;
 
+    /**
+     * Import the product.
+     */
     public function import()
     {
         if ( is_admin() && isset( $_POST['import'] ) ) {
-            // 1. Fetch styles data.
-            $stylesData = $this->getStylesService()->getAll();
-            // 2. Record the Styles data in a csv.
-            $this->getCsvManager()->writeCategoryCSV( $stylesData, CsvManager::STYLES_CSV );
+            try {
+                // 1. Fetch styles data.
+                $stylesData = $this->getStylesService()->getAll();
+                // 2. Record the Styles data in a csv.
+                $this->getCsvManager()->writeCSV( $stylesData, CsvManager::STYLES_CSV );
+                // 3. Begin product import cron job.
+
+                wp_send_json( [ 'success' => true, "message" => "Success!!" ] );
+            } catch (\Exception $e) {
+                wp_send_json( [ 'failure' => true, "message" => $e->getMessage() ]);
+            }
         }
 
         die();
