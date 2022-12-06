@@ -51,13 +51,24 @@ abstract class AbstractService
      * Returns specifically requested fields.
      * {fields} parameter is comma separated list of requested service object fields.
      *
-     * @param string $fields
+     * @param string|int|null $fields
      * @return array
      * @throws \Exception
      */
-    public function filterFields( string $fields ): array
+    public function filterFields( $fields ): array
     {
-        return $this->sendRequest( "{$this->uri}?fields={$fields}" );
+        return $this->filterResultsByKey( "fields", $fields );
+    }
+
+    /**
+     * @param string $key
+     * @param string|int|null $value
+     * @return array
+     * @throws \Exception
+     */
+    protected function filterResultsByKey( string $key, $value ): array
+    {
+        return $this->sendRequest( "{$this->uri}?{$key}={$value}" );
     }
 
     /**

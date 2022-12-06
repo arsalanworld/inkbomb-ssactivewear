@@ -4,6 +4,7 @@ namespace SSActivewear\Model;
 class CsvManager
 {
     const CATEGORY_CSV = 'categories.csv';
+    const STYLES_CSV = 'styles.csv';
 
     /**
      * @param string|null $filename

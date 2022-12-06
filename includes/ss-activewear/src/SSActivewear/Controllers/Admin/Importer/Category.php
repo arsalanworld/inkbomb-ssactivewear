@@ -16,8 +16,14 @@ class Category
      */
     private $csvManager;
 
+    /**
+     * @var \SSActivewear\Model\Category
+     */
     private $categoryModel;
 
+    /**
+     * Perform import all operation.
+     */
     public function import_all()
     {
         if (is_admin() && isset( $_POST['import'] )) {
@@ -71,6 +77,9 @@ class Category
         return $this->csvManager;
     }
 
+    /**
+     * @return \SSActivewear\Model\Category
+     */
     protected function getCategoryModel()
     {
         if ( empty( $this->categoryModel ) ) {
