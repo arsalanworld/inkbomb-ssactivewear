@@ -43,10 +43,18 @@ class Category extends \InkbombCore\Model\Category
 
         $results = $wpdb->get_results( "select post_id from $wpdb->postmeta where meta_key = '"
             . $key . "'" . $value, ARRAY_A );
+
+        $categories = array();
+        array_walk($results, function ($post, $key) use(&$categories){
+            if ( isset($post['post_id']) ) {
+                $categories[] = (int)$post['post_id'];
+            }
+        });
+
         if ( !$commaseparated ) {
-            return $results;
+            return $categories;
         }
 
-        return implode(",", $results);
+        return implode(",", $categories);
     }
 }

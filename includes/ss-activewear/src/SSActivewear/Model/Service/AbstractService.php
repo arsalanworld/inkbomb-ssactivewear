@@ -88,6 +88,8 @@ abstract class AbstractService
         $url = Config::ENDPOINT . $uri;
         if ( !str_contains( $url, "?" ) ) {
             $url .= "?";
+        } else {
+            $url .= "&";
         }
 
         $url .= "mediatype={$mediaType}";

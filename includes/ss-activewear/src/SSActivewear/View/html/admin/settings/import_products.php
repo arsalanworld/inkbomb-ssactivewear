@@ -59,5 +59,5 @@ if ( ! defined( 'ABSPATH' ) ) {
 <?php
 $cron = new \SSActivewear\Cron\Import\Product();
 echo "<pre>";
-print_r($cron->execute());
+$cron->execute();
 echo "</pre>";
