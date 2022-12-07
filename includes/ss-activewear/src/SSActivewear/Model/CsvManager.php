@@ -8,18 +8,23 @@ class CsvManager
 
     /**
      * @param string|null $filename
-     * @return array
+     * @param bool $readSingleImport
+     * @param bool $readAllRows
+     * @return array|array[]
      */
-    public function read( $filename, $readSingleImport = false )
+    public function read( $filename, $readSingleImport = false, $readAllRows = false )
     {
         $filepath = $this->getFilePath( $filename );
+        $output = [
+            "lines" => [],
+            "data" => [],
+        ];
         if ( !file_exists( $filepath ) ) {
-            return [];
+            return $output;
         }
 
         $data = file_get_contents( $filepath );
         $rows = explode(PHP_EOL, $data);
-        $output = [];
         $keys = [];
         $i = 0;
         foreach ($rows as $key => $row) {
@@ -29,22 +34,29 @@ class CsvManager
             }
 
             $content = explode(",", $row);
-            $rContent = array_reverse($content);
-            if ( empty($row) || $rContent[0]) {
+            if ( !$readSingleImport && $readAllRows ) {
+                $output["data"][] = $content;
                 continue;
             }
 
-            array_walk( $content, function ($v, $k) use ( &$output, $keys, $readSingleImport, $i ) {
+            $rContent = array_reverse($content);
+            if ( (empty($row) || $rContent[0]) && ( $readSingleImport && !$readAllRows ) ) {
+                continue;
+            }
+
+            array_walk( $content, function ($v, $k) use ( &$output, $keys, $readSingleImport, $i, $key ) {
                 if ( !isset($keys[$k]) ) {
                     return;
                 }
 
+                // Mark the line numbers read.
+                $output["lines"][$i] = $key - 1;
                 if ( !$readSingleImport ) {
-                    $output[$i][$keys[$k]] = urldecode($v);
+                    $output["data"][$i][$keys[$k]] = urldecode($v);
                     return;
                 }
 
-                $output[$keys[$k]] = urldecode($v);
+                $output["data"][$keys[$k]] = urldecode($v);
             });
 
             if ( !$readSingleImport ) {
@@ -56,22 +68,6 @@ class CsvManager
         }
 
         return $output;
-    }
-
-    public function writeCategoryCSV( $data, $filename )
-    {
-        $filepath = $this->getFilePath( $filename );
-        $this->checkAndCreateFile( $filepath );
-        // Status refers to the import. If imported it should be set to 1 otherwise 0 or empty
-        $csv = "categoryID,name,image,status" . PHP_EOL;
-        foreach ( $data as $key => $item) {
-            $csv .= "{$item['categoryID']},\"{$item['name']}\",\"{$item['image']}\","
-                . ( isset($item['status']) ? $item['status'] : "0" );
-            if ( $key < (count($data) - 1) ) {
-                $csv .= PHP_EOL;
-            }
-        }
-        file_put_contents( $filepath, $csv );
     }
 
     /**
@@ -99,6 +95,19 @@ class CsvManager
             }
         }
         file_put_contents( $filepath, $csv );
+    }
+
+    /**
+     * Delete the file.
+     *
+     * @param string $filename
+     */
+    public function delete( $filename )
+    {
+        $filepath = $this->getFilePath( $filename );
+        if ( file_exists( $filepath ) ) {
+            unlink( $filepath );
+        }
     }
 
     /**

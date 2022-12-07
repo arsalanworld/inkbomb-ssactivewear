@@ -37,4 +37,21 @@ class Config extends \InkbombCore\Model\Config
         $apiKey = $this->getOptionsArray( Settings::OPTION_API_KEY );
         return ( !empty( $apiKey ) ) ? $apiKey[Settings::OPTION_API_KEY] : '';
     }
+
+    /**
+     * @return string
+     */
+    public function isAppendBrandInfo(): string
+    {
+        $isAppend = $this->getOptionsArray( Settings::OPTION_APPEND_BRAND_INFO );
+        return ( !empty( $isAppend ) ) ? $isAppend[Settings::OPTION_APPEND_BRAND_INFO] : '';
+    }
+    /**
+     * @return string
+     */
+    public function isAppendStyleInfo(): string
+    {
+        $isAppend = $this->getOptionsArray( Settings::OPTION_APPEND_STYLE_INFO );
+        return ( !empty( $isAppend ) ) ? $isAppend[Settings::OPTION_APPEND_STYLE_INFO] : '';
+    }
 }

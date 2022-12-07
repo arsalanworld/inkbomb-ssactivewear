@@ -1,6 +1,7 @@
 <?php
 namespace SSActivewear\Controllers\Admin\Importer;
 
+use InkbombCore\Model\Schedule;
 use SSActivewear\Model\CsvManager;
 use SSActivewear\Model\Service\ProductData;
 use SSActivewear\Model\Service\StylesData;
@@ -29,13 +30,23 @@ class Product
     {
         if ( is_admin() && isset( $_POST['import'] ) ) {
             try {
-                // 1. Fetch styles data.
-                $stylesData = $this->getStylesService()->getAll();
-                // 2. Record the Styles data in a csv.
-                $this->getCsvManager()->writeCSV( $stylesData, CsvManager::STYLES_CSV );
-                // 3. Begin product import cron job.
+                $message = "The product import has been scheduled.";
+                if ( !wp_next_scheduled( \SSActivewear\Cron\Import\Product::HOOK_NAME ) ) {
+                    // 1. Fetch styles data.
+                    $stylesData = $this->getStylesService()->getAll();
+                    // 2. Record the Styles data in a csv.
+                    $this->getCsvManager()->writeCSV( $stylesData, CsvManager::STYLES_CSV );
+                    // 3. Begin product import cron job.
+                    wp_schedule_event(
+                        time(),
+                        Schedule::EVERY_FIFTEEN_SECONDS,
+                        \SSActivewear\Cron\Import\Product::HOOK_NAME
+                    );
+                } else {
+                    $message = " [Import is already in progress] ";
+                }
 
-                wp_send_json( [ 'success' => true, "message" => "Success!!" ] );
+                wp_send_json( [ 'success' => true, "message" => $message ] );
             } catch (\Exception $e) {
                 wp_send_json( [ 'failure' => true, "message" => $e->getMessage() ]);
             }

@@ -69,6 +69,7 @@ if ( !class_exists( 'WcInkbombSSActivewear' ) ) {
         public function include_files()
         {
             require_once INKBOMB_SS_PATH . "includes/activation.php";
+            require_once INKBOMB_SS_PATH . "includes/cron_hooks.php";
         }
 
         public function add_hooks()
@@ -87,6 +88,8 @@ if ( !class_exists( 'WcInkbombSSActivewear' ) ) {
             add_action( 'wp_ajax_ssactivewear_import_all_cats', array( $category, 'import_all' ) );
             $product = new \SSActivewear\Controllers\Admin\Importer\Product();
             add_action( 'wp_ajax_ssactivewear_import_products', array( $product, 'import' ) );
+
+            ssactivewear_register_cron();
         }
     }
 

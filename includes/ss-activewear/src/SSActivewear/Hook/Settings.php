@@ -13,6 +13,8 @@ class Settings extends AbstractSettings
     const PAGE_NAME = 'ssactivewear_settings_page';
     const OPTION_CUSTOMER_NUMBER = 'customer_number';
     const OPTION_API_KEY = 'api_key';
+    const OPTION_APPEND_BRAND_INFO = 'append_brand_info';
+    const OPTION_APPEND_STYLE_INFO = 'append_style_info';
 
     public function __construct()
     {
@@ -36,7 +38,7 @@ class Settings extends AbstractSettings
                             'name' => static::OPTION_CUSTOMER_NUMBER,
                             'value' => $this->getConfig()->getCustomerNumber(),
                             "section_id" => Settings::SECTION_ID,
-                            "option_name" => Settings::OPTION_NAME,
+                            "option_name" => Settings::OPTION_NAME
                         ),
                     );
                 }
@@ -52,7 +54,49 @@ class Settings extends AbstractSettings
                             'value' => $this->getConfig()->getAPIKey(),
                             'type' => \InkbombCore\Hook\Settings\Renderer::INPUT_PASSWORD,
                             "section_id" => Settings::SECTION_ID,
+                            "option_name" => Settings::OPTION_NAME
+                        )
+                    );
+                },
+            ),
+            array(
+                "field_id" => "_fld_" . static::OPTION_APPEND_BRAND_INFO,
+                "title" => "Append Brand Name to title",
+                "callback" => function () {
+                    $this->getFieldRenderer()->render(
+                        array(
+                            'field_id' => '_fld_' . static::OPTION_APPEND_BRAND_INFO,
+                            'name' => static::OPTION_APPEND_BRAND_INFO,
+                            'value' => $this->getConfig()->isAppendBrandInfo(),
+                            'type' => \InkbombCore\Hook\Settings\Renderer::SELECT,
+                            "section_id" => Settings::SECTION_ID,
                             "option_name" => Settings::OPTION_NAME,
+                            "options" => array(
+                                "0" => "No",
+                                "1" => "Yes",
+                            ),
+                            "note" => "Appears before the title. For example: <em>\"Addidas - Product Name\"</em>"
+                        )
+                    );
+                },
+            ),
+            array(
+                "field_id" => "_fld_" . static::OPTION_APPEND_STYLE_INFO,
+                "title" => "Append Style Name to title",
+                "callback" => function () {
+                    $this->getFieldRenderer()->render(
+                        array(
+                            'field_id' => '_fld_' . static::OPTION_APPEND_STYLE_INFO,
+                            'name' => static::OPTION_APPEND_STYLE_INFO,
+                            'value' => $this->getConfig()->isAppendStyleInfo(),
+                            'type' => \InkbombCore\Hook\Settings\Renderer::SELECT,
+                            "section_id" => Settings::SECTION_ID,
+                            "option_name" => Settings::OPTION_NAME,
+                            "options" => array(
+                                "0" => "No",
+                                "1" => "Yes",
+                            ),
+                            "note" => "Appears after the title. For example: <em>\"Product Name - StyleName\"</em>"
                         )
                     );
                 },

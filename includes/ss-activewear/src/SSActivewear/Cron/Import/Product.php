@@ -27,25 +27,35 @@ class Product
     private $product;
 
     /**
+     * @var Config
+     */
+    private $config;
+
+    /**
      * @var ProductData
      */
     private $productDataService;
 
     public function execute()
     {
+        InkbombLogger::log( "[SSActivewear]: Begin import of SSActivewear." );
         // Read csv.
-        $data = $this->getCsvManager()->read( CsvManager::STYLES_CSV, true );
-        if ( empty( $data ) ) {
+        $csv = $this->getCsvManager()->read( CsvManager::STYLES_CSV, true );
+        if ( empty( $csv['data'] ) ) {
             $this->clearScheduler( static::HOOK_NAME );
-            InkbombLogger::log( "Completed the product import." );
+            InkbombLogger::log( "[SSActivewear]: Completed the product import." );
+            $this->getCsvManager()->delete( CsvManager::STYLES_CSV );
             return;
         }
 
+        $data = $csv['data'];
         try {
             $product = $this->createProduct( $data );
             $productApiData = $this->getProductService()->filterResultsByStyleId( $product->get_sku() );
             $this->addAttributes( $product, $productApiData );
             $this->addVariations( $product, $productApiData );
+            InkbombLogger::log( "[SSActivewear]: Completed product import: {$product->get_id()} with sku `{$product->get_sku()}`." );
+            $this->markCsvRow( $csv['lines'], CsvManager::STYLES_CSV );
         } catch ( \Exception $e ) {
             InkbombLogger::log("[Inkbomb SSActivewear]: " . $e->getMessage());
         }
@@ -60,17 +70,18 @@ class Product
     {
         $categories = $this->getCategory()->getCatIdsByApiCategory( Category::CATEGORY_ID, $data['categories'] );
         $productId = wc_get_product_id_by_sku( $data['styleID'] );
+        $is_new_import = true;
         if ( $productId ) {
             $is_new_import = false;
         }
 
         $product = new \WC_Product_Variable( $productId );
         $title = $data['title'];
-        if ( isset( $data['brandName'] ) ) {
+        if ( isset( $data['brandName'] ) && $this->getConfig()->isAppendBrandInfo()) {
             $title = $data['brandName'] . " - " . $title;
         }
 
-        if ( isset( $data['styleName'] ) ) {
+        if ( isset( $data['styleName'] ) && $this->getConfig()->isAppendStyleInfo()) {
             $title .= " - " . $data['styleName'];
         }
 
@@ -85,7 +96,7 @@ class Product
         $productId = $product->get_id();
         $productModel = $this->getProduct();
         if ( !empty( $data['styleImage'] ) ) {
-            $imageUrl = Config::MEDIA_CDN . $data['styleImage'];
+            $imageUrl = Config::MEDIA_CDN . $this->replaceWithLargeImage($data['styleImage']);
             // Upload the image
             $productModel->uploadImgToProduct( $product, $imageUrl );
         }
@@ -112,6 +123,7 @@ class Product
             $productModel->setBoxRequired( $productId, $data['boxRequired'] );
         }
 
+        InkbombLogger::log( "[SSActivewear]: Product {$product->get_id()} with style information `{$product->get_sku()}` imported." );
         return $product;
     }
 
@@ -148,7 +160,15 @@ class Product
         $product->save();
     }
 
-    protected function addVariations( \WC_Product_Variable $product, $data )
+
+    /**
+     * Add Variations.
+     *
+     * @param \WC_Product_Variable $product
+     * @param array $data
+     * @throws \WC_Data_Exception
+     */
+    protected function addVariations( \WC_Product_Variable $product, array $data )
     {
         array_walk($data, function ($item, $i) use(&$product) {
             $variation = $this->getProduct()->getVariationBySku( $item['sku'] );
@@ -172,15 +192,60 @@ class Product
             $variation->set_weight( $item['unitWeight'] );
             $variation->save();
 
-            // Upload image
-            if ( !empty( $item['colorDirectSideImage'] ) ) {
-                $this->getProduct()->uploadImgToProduct( $variation, Config::MEDIA_CDN . $item['colorDirectSideImage'] );
+            $img = $item['colorFrontImage'];
+            if ( empty( $img ) ) {
+                $images = [
+                    "colorDirectSideImage",
+                    "colorBackImage",
+                    "colorOnModelFrontImage",
+                    "colorOnModelSideImage",
+                    "colorOnModelBackImage"
+                ];
+                foreach ($images as $image) {
+                    if ( !empty( $item[$image] ) ) {
+                        $img = $item[$image];
+                        break;
+                    }
+                }
             }
 
-            update_post_meta( $variation->get_id(), 'attribute_color',  $item['colorName']);
-            update_post_meta( $variation->get_id(), 'attribute_size',  $item['sizeName']);
+            // Upload the variation image
+            $this->getProduct()->uploadImgToProduct( $variation, Config::MEDIA_CDN . $this->replaceWithLargeImage($img) );
 
+            if ( isset( $item['colorName'] ) ) {
+                update_post_meta( $variation->get_id(), 'attribute_color',  $item['colorName']);
+            }
+
+            if ( isset( $item['sizeName'] ) ) {
+                update_post_meta( $variation->get_id(), 'attribute_size',  $item['sizeName']);
+            }
         });
+    }
+
+    /**
+     * @param array $importRowNum
+     * @param $filename
+     */
+    protected function markCsvRow( array $importRowNum, $filename )
+    {
+        $csv = $this->getCsvManager()->read( $filename );
+        $data = $csv['data'];
+        InkbombLogger::log( "[SSActivewear]: Marking the CSV." );
+        array_walk( $data, function ($row, $key) use($importRowNum, &$data) {
+            if ( !in_array($key, $importRowNum) ) {
+                return;
+            }
+
+            $data[$key]["import_status"] = 1;
+        });
+
+        $this->getCsvManager()->writeCSV( $data, $filename );
+        InkbombLogger::log( "[SSActivewear]: Marking Completed." );
+    }
+
+    protected function replaceWithLargeImage( $img )
+    {
+        return str_replace("_fm", "_fl", $img);
     }
 
     /**
@@ -240,5 +305,19 @@ class Product
         }
 
         return $this->productDataService;
+    }
+
+    /**
+     * Returns the config instance.
+     *
+     * @return Config
+     */
+    protected function getConfig()
+    {
+        if ( empty( $this->config ) ) {
+            $this->config = new Config();
+        }
+
+        return $this->config;
     }
 }

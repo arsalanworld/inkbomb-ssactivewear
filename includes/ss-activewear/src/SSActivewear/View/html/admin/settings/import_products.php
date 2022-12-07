@@ -3,6 +3,11 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
+use SSActivewear\Model\Category;
+
+$cat = new \SSActivewear\Model\Category();
+$catList = $cat->getCatIdsByApiCategory( Category::CATEGORY_ID );
+if ( count($catList) ):
 ?>
 <div class="wrap woocommerce">
     <div id="output" class="inkbomb-message-output"></div>
@@ -57,7 +62,14 @@ if ( ! defined( 'ABSPATH' ) ) {
     });
 </script>
 <?php
-$cron = new \SSActivewear\Cron\Import\Product();
-echo "<pre>";
-$cron->execute();
-echo "</pre>";
+else:
+    $settings_page = 'ssactivewear-settings';
+?>
+<div class="wrap woocommerce">
+    <div id="output" class="inkbomb-message-output failure" style="display: block;">
+        Please import the Categories first from <a href="?page=<?php echo $settings_page; ?>&tab=import_categories" style="color: #fe6;">Category tab</a>.
+    </div>
+</div>
+<?php
+endif;
+?>
