@@ -17,6 +17,8 @@ if ( count($catList) ):
     <div class="import-wrapper">
         <button type="button" id="import_btn" class="button-primary woocommerce-save-button inkbomb-importer-btn"
                 style="vertical-align: middle;"><?php esc_html_e('Import Products', INKBOMB_SS_DOMAIN); ?></button>
+        <button type="button" id="stop_import_btn" class="button-secondary inkbomb-stop-importer-btn"
+                style="vertical-align: middle;"><?php esc_html_e('Stop import', INKBOMB_SS_DOMAIN); ?></button>
     </div>
 </div>
 <script type="text/javascript">
@@ -32,6 +34,45 @@ if ( count($catList) ):
             $.post(ajaxurl, {
                 import: 1,
                 action: 'ssactivewear_import_products'
+            }, function (data) {
+                $("#output")
+                    .removeAttr('class')
+                    .html("");
+                $(currentTarget).removeAttr("disabled");
+                let default_msg = "Something went wrong with import. Please try again later.";
+                if ( data === undefined ) {
+                    alert(default_msg);
+                    return;
+                }
+
+                var span = '<span class="dashicons dashicons-yes-alt"></span>',
+                    cls = 'inkbomb-message-output success';
+                if ( data.failure != undefined ) {
+                    span = '<span class="dashicons dashicons-dismiss"></span>';
+                    cls = 'inkbomb-message-output failure';
+                }
+
+                $("#output").html(span + ((data.message != undefined) ? data.message : default_msg));
+                $("#output")
+                    .addClass( cls )
+                    .show();
+                setTimeout(function () {
+                    $("#output").hide();
+                }, 60000);
+            });
+        });
+
+        $(document).on("click", "#stop_import_btn", function () {
+            $("#output")
+                .html("Requesting Stop import.")
+                .removeClass('success')
+                .removeClass('failure')
+                .show();
+            $(this).attr('disabled', 'disabled');
+            var currentTarget = this;
+
+            $.post(ajaxurl, {
+                action: 'ssactivewear_stop_import_products'
             }, function (data) {
                 $("#output")
                     .removeAttr('class')

@@ -15,6 +15,7 @@ class Settings extends AbstractSettings
     const OPTION_API_KEY = 'api_key';
     const OPTION_APPEND_BRAND_INFO = 'append_brand_info';
     const OPTION_APPEND_STYLE_INFO = 'append_style_info';
+    const OPTION_MARKUP = 'markup_value';
 
     public function __construct()
     {
@@ -97,6 +98,23 @@ class Settings extends AbstractSettings
                                 "1" => "Yes",
                             ),
                             "note" => "Appears after the title. For example: <em>\"Product Name - StyleName\"</em>"
+                        )
+                    );
+                },
+            ),
+            array(
+                "field_id" => "_fld_" . static::OPTION_MARKUP,
+                "title" => "Markup percentage",
+                "callback" => function () {
+                    $this->getFieldRenderer()->render(
+                        array(
+                            'field_id' => '_fld_' . static::OPTION_MARKUP,
+                            'name' => static::OPTION_MARKUP,
+                            'value' => $this->getConfig()->getMarkupValue(),
+                            'type' => \InkbombCore\Hook\Settings\Renderer::INPUT_NUMBER,
+                            "section_id" => Settings::SECTION_ID,
+                            "option_name" => Settings::OPTION_NAME,
+                            'class' => '',
                         )
                     );
                 },

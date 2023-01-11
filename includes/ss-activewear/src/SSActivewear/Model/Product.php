@@ -1,6 +1,8 @@
 <?php
 namespace SSActivewear\Model;
 
+use InkbombCore\Model\PriceCalculator;
+
 class Product extends \InkbombCore\Model\Product
 {
     const SSACTIVEWEAR_PRODUCT = 'ssactivewear_product';
@@ -9,6 +11,8 @@ class Product extends \InkbombCore\Model\Product
     const BRAND_IMAGE = 'ssactive_product_brandimage';
     const STYLE_NAME = 'ssactive_product_stylename';
     const BOX_REQUIRED = 'ssactive_product_boxrequired';
+
+    private $config;
 
     public function markApiProduct( $productId )
     {
@@ -60,6 +64,14 @@ class Product extends \InkbombCore\Model\Product
     }
 
     /**
+     * @param $productId
+     */
+    public function getActivewearProductId($productId)
+    {
+        get_post_meta($productId, static::SSACTIVEWEAR_PRODUCT, true);
+    }
+
+    /**
      * @param string|int $productId
      * @return string|null
      */
@@ -102,5 +114,53 @@ class Product extends \InkbombCore\Model\Product
     public function getBoxRequired( $productId )
     {
         return get_post_meta( $productId, static::BOX_REQUIRED, true );
+    }
+
+    public function getPriceWithMarkup( $price, $product ) {
+        $productId = $this->extractProductId( $product );
+        $markupValue = $this->getConfig()->getMarkupValue();
+        if ( !$this->getIdsByApiProduct( static::SSACTIVEWEAR_PRODUCT, $productId ) || !$markupValue ) {
+            return $price;
+        }
+
+        return $this->getPriceCalculator()->calculateMarkupPrice($price, $markupValue);
+    }
+
+    public function getVariablePriceWithMarkup( $price, $variation, $product ) {
+        return $this->getPriceWithMarkup($price, $product);
+    }
+
+    public function addPriceMarkupToVariationPricesHash( $price_hash, $product, $for_display ) {
+        $productId = $this->extractProductId( $product );
+        if ( !$this->getIdsByApiProduct( static::SSACTIVEWEAR_PRODUCT, $productId ) ) {
+            return $price_hash;
+        }
+
+        $price_hash[] = $this->getConfig()->getMarkupValue();
+        return $price_hash;
+    }
+
+    /**
+     * @return Config
+     */
+    private function getConfig()
+    {
+        if (empty($this->config)) {
+            $this->config = new Config();
+        }
+
+        return $this->config;
+    }
+
+    /**
+     * @return PriceCalculator
+     */
+    private function getPriceCalculator()
+    {
+        if ( empty( $this->priceCalculator ) ) {
+            $this->priceCalculator = new PriceCalculator();
+        }
+
+        return $this->priceCalculator;
     }
 }

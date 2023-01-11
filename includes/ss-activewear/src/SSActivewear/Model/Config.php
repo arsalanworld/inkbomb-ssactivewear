@@ -54,4 +54,15 @@ class Config extends \InkbombCore\Model\Config
         $isAppend = $this->getOptionsArray( Settings::OPTION_APPEND_STYLE_INFO );
         return ( !empty( $isAppend ) ) ? $isAppend[Settings::OPTION_APPEND_STYLE_INFO] : '';
     }
+
+    /**
+     * Checks if log writer is enabled.
+     *
+     * @return float
+     */
+    public function getMarkupValue()
+    {
+        $markup = $this->getOptionsArray( Settings::OPTION_MARKUP );
+        return ( !empty( $markup ) ) ? (float) $markup[ Settings::OPTION_MARKUP ] : 0;
+    }
 }

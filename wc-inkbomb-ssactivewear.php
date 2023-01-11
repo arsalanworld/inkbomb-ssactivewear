@@ -88,6 +88,24 @@ if ( !class_exists( 'WcInkbombSSActivewear' ) ) {
             add_action( 'wp_ajax_ssactivewear_import_all_cats', array( $category, 'import_all' ) );
             $product = new \SSActivewear\Controllers\Admin\Importer\Product();
             add_action( 'wp_ajax_ssactivewear_import_products', array( $product, 'import' ) );
+            add_action( 'wp_ajax_ssactivewear_stop_import_products', array( $product, 'stopImport' ) );
+
+            // ##################### Price Hooks ##################### \\
+            $productModel = new \SSActivewear\Model\Product();
+            // Simple, grouped and external products.
+            add_filter('woocommerce_product_get_price', array( $productModel, 'getPriceWithMarkup' ), 99, 2 );
+            add_filter('woocommerce_product_get_regular_price', array( $productModel, 'getPriceWithMarkup' ), 99, 2 );
+            // Variations
+            add_filter('woocommerce_product_variation_get_regular_price', array( $productModel, 'getPriceWithMarkup' ), 99, 2 );
+            add_filter('woocommerce_product_variation_get_price', array( $productModel, 'getPriceWithMarkup' ), 99, 2 );
+
+            // Variable (price range)
+            add_filter('woocommerce_variation_prices_price', array( $productModel, 'getVariablePriceWithMarkup' ), 99, 3 );
+            add_filter('woocommerce_variation_prices_regular_price', array( $productModel, 'getVariablePriceWithMarkup' ), 99, 3 );
+
+            // Handling price caching (see explanations at the end)
+            add_filter( 'woocommerce_get_variation_prices_hash', array( $productModel, 'addPriceMarkupToVariationPricesHash' ), 99, 3 );
+            // ##################### End: Price Hooks ##################### \\
 
             ssactivewear_register_cron();
         }

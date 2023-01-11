@@ -55,6 +55,22 @@ class Product
         die();
     }
 
+    public function stopImport()
+    {
+        if ( !is_admin() ) {
+            die();
+        }
+
+        $message = "No batch process exists.";
+        if ( wp_next_scheduled( \SSActivewear\Cron\Import\Product::HOOK_NAME ) ) {
+            wp_clear_scheduled_hook( \SSActivewear\Cron\Import\Product::HOOK_NAME );
+            $message = "The batch run has been stopped.";
+        }
+
+        wp_send_json( [ 'success' => true, "message" => $message ] );
+        die();
+    }
+
     /**
      * Returns the Styles service model.
      *

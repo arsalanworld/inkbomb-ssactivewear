@@ -41,7 +41,7 @@ class Category
                 }
                 wp_send_json(array(
                     "success" => true,
-                    "message" => "A total of {$importCount} categories swere imported."
+                    "message" => "A total of {$importCount} categories were imported."
                 ));
             } catch (\Exception $e) {
                 wp_send_json(array(
